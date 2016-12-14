@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class EnemySpawner : MonoBehaviour {
+public class EnemyFormation : MonoBehaviour {
 	public GameObject enemyPrefab;
 	public float width = 10.0f;
 	public float height = 5.0f;
 	public float moveSpeed = 7.0f; 
+	public float spawnDelay = 0.5f;
 
 	private bool movingRight = false;
 	private float xmin;
@@ -19,10 +20,7 @@ public class EnemySpawner : MonoBehaviour {
 		xmin = leftmost.x;
 		xmax = rightmost.x;
 
-		foreach (Transform child in transform) { 
-			GameObject enemy = Instantiate (enemyPrefab, child.transform.position, Quaternion.identity) as GameObject;
-			enemy.transform.parent = child.transform; 	
-		}
+		SpawnUntilFull ();
 	}
 
 	void OnDrawGizmos() {
@@ -31,12 +29,14 @@ public class EnemySpawner : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
+		// Direction formation is moving in
 		if (movingRight) {
 			transform.position += Vector3.right * moveSpeed * Time.deltaTime;
 		} else {
 			transform.position += Vector3.left * moveSpeed * Time.deltaTime;
 		}
 
+		// Check if formation is outside the playspace
 		float formationRightEdge = transform.position.x + width / 2;
 		float formationLeftEdge = transform.position.x - width / 2;
 
@@ -45,5 +45,44 @@ public class EnemySpawner : MonoBehaviour {
 		} else if (formationRightEdge > xmax) {
 			movingRight = false;
 		}
+
+		if (AllMembersDead ()) {
+			Debug.Log ("Empty Formation");
+			SpawnUntilFull();
+		}
+
+	}
+
+	void SpawnUntilFull() {
+		Transform freePosition = NextFreePosition ();
+
+		if (freePosition) {
+			GameObject enemy = Instantiate (enemyPrefab, freePosition.position, Quaternion.identity) as GameObject;
+			enemy.transform.parent = freePosition; 	
+		}
+
+		// Only call again if there's another open position
+		if (NextFreePosition ()) {
+			Invoke ("SpawnUntilFull", spawnDelay);
+		}
+	}
+
+	Transform NextFreePosition() {
+		foreach (Transform childPositionGameObject in transform) {
+			// Return a position gameobject if there is no child
+			if (childPositionGameObject.childCount == 0) {
+				return childPositionGameObject;
+			}
+		}
+		return null;
+	}
+
+	bool AllMembersDead() {
+		foreach(Transform childPositionGameObject in transform) {
+			if (childPositionGameObject.childCount > 0) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
