@@ -6,6 +6,14 @@ public class EnemyBehavior : MonoBehaviour {
 	public GameObject enemyProjectile;
 	public float enemyProjectileSpeed;
 	public float shotsPerSecond;
+	public int hitValue = 25;
+	public int killValue = 100;
+
+	private ScoreKeeper scoreKeeper;
+
+	void Start(){
+		scoreKeeper = GameObject.Find ("Score").GetComponent<ScoreKeeper> ();
+	}
 
 	void Update() {
 		float probability = Time.deltaTime * shotsPerSecond;
@@ -29,7 +37,10 @@ public class EnemyBehavior : MonoBehaviour {
 
 			if (health <= 0.0) {
 				Debug.Log (health);
+				scoreKeeper.Score(killValue);
 				Destroy(gameObject);
+			} else {
+				scoreKeeper.Score(hitValue);
 			}
 
 			projectile.Hit();
