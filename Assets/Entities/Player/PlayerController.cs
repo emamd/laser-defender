@@ -9,6 +9,8 @@ public class PlayerController : MonoBehaviour {
 	public float projectileSpeed;
 	public float fireRate;
 	public float health;
+	public AudioClip fire;
+	public AudioClip destroyed;
 
 	float xmin;
 	float xmax;
@@ -25,6 +27,7 @@ public class PlayerController : MonoBehaviour {
 		Vector3 offset = new Vector3 (0, 1, 0);
 		GameObject beam = Instantiate (projectile, transform.position + offset, Quaternion.identity) as GameObject;
 		beam.rigidbody2D.velocity = new Vector3(0, projectileSpeed, 0);
+		AudioSource.PlayClipAtPoint(fire, gameObject.transform.position, 0.8f);
 	}
 
 	// Update is called once per frame
@@ -55,6 +58,7 @@ public class PlayerController : MonoBehaviour {
 			
 			if (health <= 0.0) {
 				Debug.Log (health);
+				AudioSource.PlayClipAtPoint(destroyed, gameObject.transform.position, 0.8f);
 				Destroy(gameObject);
 			}
 			
